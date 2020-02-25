@@ -1,0 +1,24 @@
+El proyecto sshield, es un demonio que proteje contra ataques de fuerza bruta via ssh. Este demonio, tiene un comando que facilita su manipulación, llamada
+'sshield'. Puede ver toda su informacion leyendo su manual 'man sshield'.
+
+Para instalar este servicio, debe de descargarse todos estos archivos y ejecutar el archivo INSTALL.
+
+Este archivo instalará el servicio. Instalando los paquetes 'zenity', 'iptables-persistent', 'swaks' en caso de que no los tuviera instalados previamente.
+
+Esto también contiene su propio desinstalador.
+
+Cualquier sugerencia contacta en cleannet29@gmail.com www.cleanet.260mb.net
+
+||=======================================================================================================================================================||
+
+The sshield proyect, is a daemon, it protects of brute force's attacks via ssh. This daemon, has your own comand (sshield), easying your manipulation.
+You can all the information, if you reads your manual 'man sshield'.
+
+For install this service, you must of download all this files and execute INSTALL file.
+
+This file will install the service. It installing the packages 'zenity', 'iptables-persistent', 'swaks', if it is needs it.
+
+Also, it contents su own uninstaller.
+
+If you has a answer or suggestion, you can inform me.
+My contact: <cleannet29@gmail.com> www.cleanet.260mb.net
