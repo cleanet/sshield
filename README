@@ -3,7 +3,7 @@ El proyecto sshield, es un demonio que proteje contra ataques de fuerza bruta vi
 
 Para instalar este servicio, debe de descargarse todos estos archivos y ejecutar el archivo INSTALL.
 
-Este archivo instalará el servicio. Instalando los paquetes 'zenity', 'iptables-persistent', 'swaks' en caso de que no los tuviera instalados previamente.
+Este archivo instalará el servicio. Instalando los paquetes 'zenity', 'iptables-persistent', 'swaks' en caso de que no los tuviera instalados previamente. Y modificando y moviendo archivos
 
 Esto también contiene su propio desinstalador.
 
@@ -16,7 +16,7 @@ You can all the information, if you reads your manual 'man sshield'.
 
 For install this service, you must of download all this files and execute INSTALL file.
 
-This file will install the service. It installing the packages 'zenity', 'iptables-persistent', 'swaks', if it is needs it.
+This file will install the service. It installing the packages 'zenity', 'iptables-persistent', 'swaks', if it is needs it. And, modifying and moving files
 
 Also, it contents su own uninstaller.
 
