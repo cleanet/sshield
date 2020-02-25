@@ -1,0 +1,153 @@
+#!/bin/bash
+
+if [[ $(whoami) == "root" ]];then
+	:
+else
+	echo -e "\033[1;31m[-]\033[00m It needs root"
+	exit 1
+fi
+clear
+PWD=$(echo "$0" | sed -e "s/\/INSTALL//g")
+function operation(){
+	function loading(){
+		while [ true ]
+		do
+			echo -ne "."
+			sleep 2
+		done
+	}
+	echo -ne $1
+	loading&
+	PID_loading=$!
+	if [[ $3 = 1 ]];then
+		sudo $2
+	else
+		sudo DEBIAN_FRONTEND=nointeractive $2 > /dev/null 2>&1
+	fi
+	kill -19 $PID_loading > /dev/null 2>&1
+	echo ""
+}
+echo "=============================================================="
+echo "                         DEPENDENCES"
+echo "=============================================================="
+echo -e "\033[1;34m [!]\033[00m If it is a server, I recommend, that you don't install zenity"
+echo -ne "Install zenity? [y/n]: "
+read install_zenity
+case $install_zenity in
+"Y" | "y")
+	if [[ ! $(dpkg -l | grep "zenity" ) ]];then
+	                operation "installing zenity (via apt-get)" "apt-get install -y zenity"
+	else
+	        echo -e "installing zenity (via apt-get).\033[1;32minstalled\033[0m"
+	fi
+;;
+"N" | "n" | *)
+	:
+;;
+esac
+if [[ ! $(dpkg -l | grep "iptables-persistent" ) ]];then
+	operation "installing iptables-persistent (via apt-get)" "apt-get install -y iptables-persistent"
+else
+	echo -e "installing iptables-persistent (via apt-get).\033[1;32minstalled\033[0m"
+fi
+
+if [[ ! $(dpkg -l | grep "swaks" ) ]];then
+	operation "installing swaks (via apt-get)" "apt-get install -y swaks"
+else
+	echo -e "installing swaks (via apt-get).\033[1;32minstalled\033[0m"
+fi
+echo "=============================================================="
+echo "                       FILES' CUSTOMIZE"
+echo "=============================================================="
+echo ""
+echo "  email"
+echo "=========="
+echo -ne "Are you want to customize the \033[4;37memail\033[0m file? [y/n]: "
+read email
+case $email in
+"y" | "Y")
+	echo -ne "sender: "
+	read sender
+	sed -i "s/user@mail.com/$sender/g" $PWD/email
+	echo -ne "server [smtp.mail.com]:[port]: "
+	read server
+	sed -i "s/smtp.mail.com:25/$server/g" $PWD/email
+	echo -ne "password (It doesn't display the output, by security): "
+	read -s password
+	sed -i "s/contraseña/$password/g" $PWD/email
+;;
+"n" | "N" | *)
+	echo "cancelled"
+;;
+esac
+echo ""
+echo "  sshield.sh"
+echo "==============="
+echo -ne "Are you want to customize the \033[4;37msshield.sh\033[0m file? [y/n]: "
+read sshield
+case $sshield in
+"y" | "Y")
+	echo "Who will receive the email, it warning of the lock"
+	echo -ne "email (destination): "
+	read destination
+	sed -i "s/user@mail.com/$destination/g" $PWD/sshield.sh
+;;
+"n" | "N" | *)
+	echo "cancelled"
+;;
+esac
+echo "=============================================================="
+echo "                     MOVE AND MODIFY FILES"
+echo "=============================================================="
+echo -ne "Move and modify files? [y/n] "
+read files
+case $files in
+"y" | "Y")
+	echo -ne "applying files' permissions"
+	chmod a+x $PWD/*
+	chmod a-x $PWD/sshield.deny
+	chmod a-x $PWD/sshield.help
+	chmod a-x $PWD/sshield.service
+	chmod a-x $PWD/sshield.1.gz
+	echo -ne "."
+	echo ""
+	operation "moving email" "mv $PWD/email /bin/"
+	operation "moving sshield" "mv $PWD/sshield /bin/"
+	operation "creating folder /etc/sshield" "mkdir /etc/sshield"
+	operation "moving sshield.sh" "mv $PWD/sshield.sh /etc/sshield/"
+	operation "moving sshieldd" "mv $PWD/sshieldd /etc/sshield/"
+	operation "executing sshield.bashrc" "$PWD/sshield.bashrc"
+	operation "deleting sshield.bashhrc" "shred -u $PWD/sshield.bashrc"
+	operation "moving sshield.service" "mv $PWD/sshield.service /lib/systemd/system/"
+	operation "linking sshield.service" "ln -s /lib/systemd/system/sshield.service /etc/systemd/system/sshield.service"
+	operation "coping sshield.init" "cp $PWD/sshield.init /etc/systemd/system/sshield"
+	operation "moving sshield.init" "mv $PWD/sshield.init /etc/init.d/sshield"
+	operation "moving sshield.1.gz" "mv $PWD/sshield.1.gz /usr/share/man/man1/"
+	operation "moving sshield.help" "mv $PWD/sshield.help /usr/share/man/man1/"
+	operation "moving sshield.deny" "mv $PWD/sshield.deny /var/cache/"
+	operation "moving uninstaller" "mv $PWD/sshield-uninstall /bin/"
+	if [[ ! $(cat /usr/share/netfilter-persistent/plugins.d/15-ip4tables | grep "SSHIELD") ]];then
+		operation "modifing 15-ip4tables" $(sed -i '/load IPv4/i\        \#\#\#\#\#\#\#\#\#\#\#\n        \# SSHIELD \# Run the sshieldd script, for deny the ip addresses of the sshield.deny file\n        \#\#\#\#\#\#\#\#\#\#\#\n\n        /etc/sshield/sshieldd\n' /usr/share/netfilter-persistent/plugins.d/15-ip4tables) 1
+	fi
+	systemctl daemon-reload > /dev/null 2>&1
+	systemctl enable sshield > /dev/null 2>&1
+	systemctl start sshield > /dev/null 2>&1
+	operation "creating links in rc.d" $(ln -s ../init.d/sshield /etc/rc0.d/S01sshield && ln -s ../init.d/sshield /etc/rc1.d/S01sshield && ln -s ../init.d/sshield /etc/rc2.d/S01sshield && ln -s ../init.d/sshield /etc/rc3.d/S01sshield && ln -s ../init.d/sshield /etc/rc4.d/S01sshield && ln -s ../init.d/sshield /etc/rc5.d/S01sshield && ln -s ../init.d/sshield /etc/rc6.d/S01sshield && ln -s ../init.d/sshield /etc/rcS.d/S01sshield) 1
+;;
+"n" | "N" | *)
+	echo "cancelled"
+	exit 1
+;;
+esac
+echo -n "Finish."
+output_service=$(service sshield status)
+if [[ $(echo $output_service | grep "running") ]];then
+	echo -ne " \033[1;32m●\033[0m Service \033[1;32mrunning\033[0m successfully."
+	echo ""
+elif [[ $(echo $output_service | grep "inactive") ]];then
+	echo -ne " Service inactive, but created"
+	echo ""
+elif [[ $(echo $output_service | grep "failed") ]];then
+	echo -ne " \033[1;31m●\033[0mService \033[1;31mfailed\033[0m"
+	echo ""
+fi

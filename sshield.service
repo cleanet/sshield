@@ -1,0 +1,12 @@
+[Unit]
+Description=Service for protect attacks of brute force ssh's
+
+[Service]
+Type=simple
+ExecStart=/etc/sshield/sshield.sh
+ExecStop=/etc/sshield/sshield.sh stop
+RemainAfterExit=yes
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

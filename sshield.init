@@ -1,0 +1,68 @@
+#!/bin/bash
+ 
+NAME=sshield
+PIDFILE="/var/run/${NAME}.pid"
+
+case "$1" in
+    start)
+	echo -n "Starting $NAME (via systemctl)... "
+        systemctl start $NAME
+	reteval=$?
+	sleep 1
+	if [ $reteval = 0 ];then
+		echo -e "\033[0;32mOK\033[00m"
+        else
+		echo -e "\033[0;31mFAIL\033[00m"
+		echo $reteval
+	fi
+	;;
+    stop)
+        echo -n "Stopping $NAME (via systemctl)... "
+        systemctl stop $NAME
+	reteval=$?
+	sleep 1
+	if [ $reteval = 0 ];then
+	        echo -e "\033[0;32mOK\033[00m"
+	else
+		echo -e "\033[0;31mFAIL\033[00m"
+		echo ""
+		echo $reteval
+	fi
+        rm -f $PIDFILE
+        ;;
+    restart)
+        echo -n "Stopping $NAME (via systemctl)... "
+        systemctl stop $NAME
+        reteval=$?
+        sleep 1
+        if [ $reteval = 0 ];then
+                echo -e "\033[0;32mOK\033[00m"
+        else
+                echo -e "\033[0;31mFAIL\033[00m"
+		echo ""
+                echo $reteval
+        fi
+	echo -n "Starting $NAME (via systemctl)... "
+	systemctl start $NAME
+        reteval=$?
+        sleep 1
+        if [ $reteval = 0 ];then
+                echo -e "\033[0;32mOK\033[00m"
+        else
+                echo -e "\033[0;31mFAIL\033[00m"
+		echo ""
+                echo $reteval
+        fi
+        ;;
+    status)
+	systemctl status $NAME
+    	;;
+    *)
+	if [[ $# = 0 ]];then
+		systemctl start $NAME
+	else
+	        N=/etc/init.d/$NAME
+	        echo "Usage: $0 {start|stop|restart}"
+	fi
+        ;;
+esac

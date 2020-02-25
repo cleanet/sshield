@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#
+# It get the number of line of sshield.deny file, and with a for loop, it read each line ip address and deny it.
+#
+linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
+linea_minima=4
+iptables=$(iptables -L -n)
+for y in $(seq $linea_minima $linea_maxima)
+do
+	#
+	# If the address ip, has a mask
+	#
+
+	if [[ $(awk "NR==$y" /var/cache/sshield.deny | grep "/") ]];then                                              #___________> mask's regular expression
+		ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2}")
+	else
+		ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") # not mask
+	fi
+
+	#
+	# If the address ip is new in the file, it is added
+	#
+
+	if [[ ! $(echo $iptables | grep -o "$ip") ]];then
+		iptables -I INPUT -s $ip -j DROP -m comment --comment "IP bloqueada por sshield"
+	fi
+done

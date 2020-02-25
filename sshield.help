@@ -1,0 +1,17 @@
+sshield
+IMPORTANT: The command need run with preveleges root
+
+Usage:
+	sshield -[ID] [address,[address]...]
+	sshield -[FRulLh]
+
+Arguments:
+	--insert	-I address      Deny ip addresses
+	--delete	-D address	Remove ip addresses denied by sshield 
+	--tree				Show a directories tree's of sshield
+	--flush		-F		Remove all the ip addresses denied by sshield, and it empty the file sshield.deny
+	--remove-all	-R		Remove all the ip addresses denied by sshield, but it doesn't empty the file sshield.deny
+	--update	-u		Denied the ips listed in the file sshield.deny
+	--list		-l		List the file sshield.deny
+			-L		List the addresses ip denied
+	--help		-h		Show this help information

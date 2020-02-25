@@ -1,0 +1,117 @@
+#!/bin/bash
+
+if [[ $(whoami) == "root" ]];then
+	:
+else
+	echo -e "\033[1;31m[-]\033[00m It needs root"
+	exit 1
+fi
+clear
+PWD=$(echo "$0" | sed -e "s/\/INSTALL//g")
+function operation(){
+	function loading(){
+		while [ true ]
+		do
+			echo -ne "."
+			sleep 2
+		done
+	}
+	echo -ne $1
+	loading&
+	PID_loading=$!
+	if [[ $3 = 1 ]];then
+		sudo $2
+	else
+		sudo DEBIAN_FRONTEND=nointeractive $2 > /dev/null 2>&1
+	fi
+	kill -19 $PID_loading > /dev/null 2>&1
+	echo ""
+}
+confirm=0
+while [ $confirm -lt 3 ]
+do
+	echo -ne "Uninstall sshield service? [y/n] ($(($confirm+1))º time): "
+	read uninstall
+	case $uninstall in
+	"y" | "Y")
+		:
+	;;
+	"n" | "N" | *)
+		echo "Aborded"
+		exit 1
+	;;
+	esac
+	confirm=$((confirm+1))
+done
+systemctl disable sshield > /dev/null 2>&1
+operation "sshield -F" "sshield -F"
+operation "deleting /bin/email" "shred -u /bin/email"
+operation "deleting /bin/sshield" "shred -u /bin/sshield"
+operation "deleting folder /etc/sshield/" "rm -rf /etc/sshield"
+operation "deleting /lib/systemd/system/sshield.service" "shred -u /lib/systemd/system/sshield.service"
+operation "deleting /etc/systemd/system/sshield" "shred -u /etc/systemd/system/sshield"
+operation "deleting /etc/init.d/sshield" "shred -u /etc/init.d/sshield"
+operation "deleting /usr/share/man/man1/sshield.1.gz" "shred -u /usr/share/man/man1/sshield.1.gz"
+operation "deleting /usr/share/man/man1/sshield.help" "shred -u /usr/share/man/man1/sshield.help"
+operation "deleting /var/cache/sshield.deny" "shred -u /var/cache/sshield.deny"
+lineas=$(wc -l /usr/share/netfilter-persistent/plugins.d/15-ip4tables | grep -E -o "[0-9]{1,9}[[:space:]]")
+linea=0
+for line in $(seq 1 $lineas)
+do
+	if [[ $(awk "NR==$line" /usr/share/netfilter-persistent/plugins.d/15-ip4tables | grep "SSHIELD") ]];then
+		linea=$line
+	fi
+done
+inicio=$(($linea-1))
+fin=$(($linea+4))
+sed -i "$inicio,$fin{d}" /usr/share/netfilter-persistent/plugins.d/15-ip4tables > /dev/null 2>&1
+systemctl daemon-reload > /dev/null 2>&1
+systemctl stop sshield > /dev/null 2>&1
+operation "deleting rc.d's files" "rm -rf /etc/rc?.d/S01sshield"
+
+#
+# The `listar` variable, contents the system's users. And with it, does a for loop.
+# If the user has a directory in /home, it means that is a normal user, and not a service's user
+#
+
+listar=$(awk -F: '{ print $1}' /etc/passwd)
+for usuario in $listar
+do
+        if [ -d /home/$usuario ];then
+
+                #
+                # If in the .bashrc file has the sshield's script added, else it, add it
+                #
+
+               	if [[ $(cat /home/$usuario/.bashrc | grep "ADDRESSES IP DENIED") ]];then
+			ultima=$(wc -l /home/$usuario/.bashrc | grep -E -o "[0-9]{1,9}[[:space:]]")
+			linea=0
+			for i in $(seq 0 $ultima)
+			do
+				if [[ $(awk "NR==$i" /home/$usuario/.bashrc | grep "ADDRESSES IP DENIED") ]];then
+					linea=$(echo "$i")
+				fi
+			done
+			inicio=$(($linea-1))
+			fin=$(($linea+8))
+			sed -i "$inicio,$fin{d}" /home/$usuario/.bashrc > /dev/null 2>&1
+		fi
+	fi
+done
+archivos=("/root/.bashrc" "/etc/skel/.bashrc")
+for archivo in ${archivos[*]}
+do
+	ultima=$(wc -l $archivo | grep -E -o "[0-9]{1,9}[[:space:]]")
+        linea=0
+        for i in $(seq 0 $ultima)
+        do
+	        if [[ $(awk "NR==$i" $archivo | grep "ADDRESSES IP DENIED") ]];then
+	                linea=$(echo "$i")
+                fi
+        done
+        inicio=$(($linea-1))
+        fin=$(($linea+8))
+	sed -i "$inicio,$fin{d}" $archivo > /dev/null 2>&1
+done
+echo -e "Finish. \033[1;32m●\033[0m Service uninstalled \033[1;32msuccessfully\033[0m."
+operation "deleting sshield-uninstall" "shred -u /bin/sshield-uninstall"

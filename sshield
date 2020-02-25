@@ -1,0 +1,394 @@
+#!/bin/bash
+
+#
+# The function obtener_ips(), get the addresses ip, of the arguments' values specified.
+# And it is added the `ips` list. For a use future.
+#
+
+function obtener_ips(){
+	IFS="" read -ra elements <<< $1
+	for i in $elements
+	do
+		if [[ $(echo $i | grep "/") ]];then
+	        	ip=$(echo $i | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2}")
+			ips=("$i" "${ips[@]}")
+		elif [[ $(echo $i | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") ]];then
+	                ips=("$i" "${ips[@]}")
+		fi
+	done
+}
+
+#
+# The script, needs to be executed with root
+#
+
+if [[ $(whoami) = "root" ]];then
+	:
+else
+	echo -e "\033[1;31m[-]\033[0;0m It need to run with privileges root"
+	exit 1
+fi
+
+#
+# If the command hasn't an argument, it will print a alert
+#
+
+argumento=$1
+if [[ $# = 0 ]];then
+	echo -e "\033[1;34m[!]\033[0;0m It need arguments"
+	echo "You use '--h' or '-h' for more information"
+	exit 1
+else
+	:
+fi
+
+#
+# We add two lists ips() and range_ips(), the second is for, store the ips' remove in the `-D, --delete` argument and it show
+#
+
+ips=()
+range_ips=()
+
+################
+#    INSERT    #
+################
+
+if [[ $argumento == "-I" || $argumento == "--insert" ]];then
+
+        #
+        # The `obtener_ips` variable gets the address ip specified.
+        #
+
+        obtener_ips "$*"
+        if [[ $# = 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m It hasn't any address ip"
+                echo "You use '--h' or '-h' for more information"
+                exit 1
+        fi
+
+        #
+	# It do a for loop, and each element, (address ip), it is added in sshield.deny file. Before, if the element, is a range it will generate the addresses ip specified, and
+	# also it is added in the sshield.deny file. Else it follow normal.
+	# ___________
+	# |IMPORTANT| If the address ip has a mask, the sshieldd file will get it
+	#
+
+        for i in ${ips[*]}
+        do
+		#
+		# If the address ip, is equal the server's address ip, it doesn`t execute
+		#
+
+                if [[ ! $i = "192.168.0.2" ]];then
+                        if [[ ! $(cat /var/cache/sshield.deny | grep -o "$i") ]];then
+                		if [[ $(echo "$i" | grep "{") ]];then
+
+					#
+					# 192.168.2.{40..50}
+					#
+					# |192.168.2.| { |40..50}|
+					# |__________|   |_______|
+					#      red       lista_i[1]
+					#
+
+                        		IFS="{" read -ra lista_i <<< $i
+                        		red=${lista_i[0]}
+
+					#             __________
+					# 40..50} ==> | 40..50 |
+					#             ----------
+					#
+					# |40| .. |50|      __final
+					# |__|    |__|_____|
+					#   |____________ inicio
+					#
+
+                        		range=$(echo "${lista_i[1]}" | sed "s/.$//")
+                        		IFS=".." read -ra lista_range <<< $range
+                        		inicio=${lista_range[0]}
+                        		final=${lista_range[2]}
+
+					#
+					# Generate the addresses ip, the variable `a` is the last ip's actet
+					#
+
+                        		for a in $(seq $inicio $final)
+                        		do
+                                		ips=("$red$a" "${ips[@]}")
+                                		echo  "$red$a" >> /var/cache/sshield.deny
+                        		done
+				else
+	                    		echo "$i" >> /var/cache/sshield.deny
+	                       	fi
+        		fi
+	 	else
+                       	echo -e "\033[1;34m[!]\033[0;0m sshield won't deny the server IP's [$i]"
+               	fi
+        done
+
+	#
+	# Finally, it execute the daemon
+	#
+
+        /etc/sshield/sshieldd
+	echo -e "\033[1;32m[+]\033[0;0m The addresses ip ${ips[*]} are denied"
+
+################
+#    DELETE    #
+################
+
+elif [[ $argumento == "-D" || $argumento == "--delete" ]];then
+
+	#
+	# It do the same, but deleting the addresses ip selected
+	#
+
+        obtener_ips "$*"
+        if [[ $# = 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m It hasn't any address ip"
+                echo "You use '--h' or '-h' for more information"
+                exit 1
+        fi
+	for i in ${ips[*]}
+	do
+		#
+		# ip range
+		#
+
+		if [[ $(echo "$i" | grep "{") ]];then
+			IFS="{" read -ra lista_i <<< $i
+			red=${lista_i[0]}
+			range=$(echo "${lista_i[1]}" | sed "s/.$//")
+			IFS=".." read -ra lista_range <<< $range
+			inicio=${lista_range[0]}
+			final=${lista_range[2]}
+			for a in $(seq $inicio $final)
+			do
+				#
+				# The address ip generated, is stored in the `range_ips` variable, because, the address ip, doesn`t added in the sshield.deny file. And before it will print
+				#
+
+				range_ips=("$red$a" "${range_ips[@]}")
+				IPTABLES -I INPUT -s "$red$a" -j DROP -m comment --comment "IP bloqueada por sshield"
+			done
+		else
+			#
+			# If the address ip ($i), has a hash (/), it means that, it has a mask, so the loop for will scan the sshield.deny file, seeing, if the address ip generated is
+			# equal to the address ip in the file. If it is true, it sshield.deny's line will remove.
+			#
+
+			if [[ $(echo $i | grep "/") ]];then
+				linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
+				linea_minima=4
+				iptables=$(iptables -L -n)
+				for line in $(seq $linea_minima $linea_maxima)
+				do
+					cond=$(awk "NR==$line" /var/cache/sshield.deny)
+					if [[ "$cond" = "$i" ]];then
+
+						#
+						# Remove the line with the address ip
+						#
+
+						sed -i "$line{d}" /var/cache/sshield.deny
+					fi
+				done
+				iptables -D INPUT -s $i -j DROP -m comment --comment "IP bloqueada por sshield"
+			else
+                        	iptables -D INPUT -s $i -j DROP -m comment --comment "IP bloqueada por sshield"
+                        	sed -i "/$i/d" /var/cache/sshield.deny
+			fi
+		fi
+	done
+	echo -e "\033[1;32m[+]\033[0;0m The addresses ip ${ips[*]}${range_ips[*]} are allowed"
+
+###############
+#    FLUSH    #
+###############
+
+elif [[ $argumento == "-F" || $argumento == "--flush" ]];then
+	if [[ $# -gt 1 ]];then
+		echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+		echo "You use '--h' or '-h' for more information"
+	else
+		# ___________
+		# |IMPORTANT| The execute, make a iptables' alert, because if the address ip has mask, the two variables (`iptables` and `iptables2`) is executed, and one will do to fail.
+		# But, it deletes all successfully.
+		#
+		# Delete all the addresses ip without mask
+		#
+		iptables=$(iptables -L -n | grep sshield | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+		for i in $iptables; do $(iptables -D INPUT -s $i -j DROP -m comment --comment "IP bloqueada por sshield"); done
+
+		#
+		# With mask
+		#
+
+		iptables2=$(iptables -L -n | grep sshield | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2}")
+                for i in $iptables2; do $(iptables -D INPUT -s $i -j DROP -m comment --comment "IP bloqueada por sshield"); done
+
+		#
+		# It empties the sshield.deny file
+		#
+
+		echo "#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  @ Please, you don't modify this file" > /var/cache/sshield.deny
+		echo "#     Deny ips by sshield       @  @ This file is generated by sshield" >> /var/cache/sshield.deny
+		echo "#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" >> /var/cache/sshield.deny
+
+		echo -e "\033[1;32m[+]\033[0;0m All the addresses ip allowed"
+	fi
+
+####################
+#    REMOVE ALL    #
+####################
+
+elif [[ $argumento == "-R" || $argumento == "--remove-all" ]];then
+        if [[ $# -gt 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+                echo "You use '--h' or '-h' for more information"
+        else
+		#
+		# It do the same that the flush argument, but without empting the sshield.deny file
+		#
+
+                iptables=$(iptables -L -n | grep sshield | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+                for i in $iptables; do $(iptables -D INPUT -s $i -j DROP -m comment --comment "IP bloqueada por sshield" > /dev/null); done
+
+                iptables2=$(iptables -L -n | grep sshield | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2}")
+                for a in $iptables2; do $(iptables -D INPUT -s $a -j DROP -m comment --comment "IP bloqueada por sshield" > /dev/null); done
+
+		echo -e "\033[1;32m[+]\033[0;0m All the addresses ip allowed"
+        fi
+
+################
+#    UPDATE    #
+################
+
+elif [[ $argumento == "-u" || $argumento == "--update" ]];then
+	if [[ $# -gt 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+                echo "You use '--h' or '-h' for more information"
+	else
+		#
+		# Run the daemon, for denying the sshield.deny file's addresses ip
+		#
+
+		/etc/sshield/sshieldd
+		echo -e "\033[1;32m[+]\033[0;0m All the addresses ip updated successfull"
+	fi
+
+##############
+#    LIST    #
+##############
+
+elif [[ $argumento == "-l" || $argumento == "--list" ]];then
+	if [[ $# -gt 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+                echo "You use '--h' or '-h' for more information"
+	else
+		more /var/cache/sshield.deny
+	fi
+
+########################
+#    IPTABLES' LIST    #
+########################
+
+elif [[ $argumento == "-L" ]];then
+	if [[ $# -gt 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+                echo "You use '--h' or '-h' for more information"
+	else
+		echo "-------------------"
+		echo "|     SSHIELD     |"
+		echo "-------------------"
+		iptables -L -n | grep sshield
+	fi
+
+##############
+#    TREE    #
+##############
+#
+# It show a directories' tree, of the sshield`s file
+#
+
+elif [[ $argumento == "--tree" ]];then
+	echo -e "\033[1;31m /\033[00m"
+	echo "|"
+	echo -e "|\__ \033[1;34mbin\033[00m"
+	echo -e "|       |\__ \033[1;32msshield\033[00m"
+	echo -e "|       |"
+	echo -e "|       \__ \033[1;32msshield-uninstall\033[0m"
+	echo "|"
+	echo -e "|\__ \033[1;34metc\033[00m"
+	echo -e "|      |\__ \033[1;34msshield\033[00m"
+	echo -e "|      |          |\__ \033[1;32msshield.sh\033[00m"
+	echo -e "|      |          |"
+	echo -e "|      |          \__ \033[1;32msshieldd\033[00m"
+	echo -e "|      |"
+	echo -e "|      |\__ \033[1;34msystemd\033[00m"
+	echo -e "|      |           \__ \033[1;34msystem\033[00m"
+	echo -e "|      |                     |\__ \033[1;36msshield.service\033[00m -> /lib/systemd/system/sshield.service"
+	echo -e "|      |                     |"
+	echo -e "|      |                     |\__ \033[1;32msshield\033[00m"
+	echo -e "|      |                     |"
+	echo -e "|      |                     \__ \033[1;34mmulti-user.target.wants\033[00m"
+	echo -e "|      |                                                \__ \033[1;36msshield.service\033[00m -> /lib/systemd/system/sshield.service"
+	echo -e "|      |"
+	echo -e "|      |\__ \033[1;34mskel\033[00m"
+	echo -e "|      |        \__ \033[1;32m.bashrc\033[00m <- File changed by sshield"
+	echo -e "|      |"
+	echo -e "|      |\__ \033[1;34minit.d\033[0m"
+	echo -e "|      |          \__ \033[1;32msshield\033[0m"
+	echo -e "|      |"
+	echo -e "|      \__ \033[1;34mrc?.d\033[0m <-- alls the rc.d folders"
+	echo -e "|               \__ \033[1;36mS01sshield\033[0m -> ../init.d/sshield"
+	echo "|"
+        echo -e "|\__ \033[1;34mhome\033[00m"
+        echo -e "|        \__ \033[1;34m[users]\033[00m <-- All the system's home directory (users installed)"
+        echo "|                  \__ .bashrc <-- File changed by sshield"
+	echo "|"
+	echo -e "|\__ \033[1;34mlib\033[00m"
+	echo -e "|       \__ \033[1;34msystemd\033[00m"
+	echo -e "|                  \__ \033[1;34msystem\033[00m"
+	echo -e "|                            \__ sshield.service"
+	echo "|"
+        echo -e "|\__ \033[1;34mroot\033[00m"
+        echo "|        \__ .bashrc <-- File changed by sshield"
+	echo "|"
+	echo -e "|\__ \033[1;34musr\033[00m"
+	echo -e "|       \__ \033[1;34mshare\033[00m"
+	echo -e "|                |\__ \033[1;34mman\033[00m"
+	echo -e "|                |      \__ \033[1;34mman1\033[00m"
+	echo -e "|                |              |\__ sshield.help"
+	echo -e "|                |              |"
+	echo -e "|                |              \__ \033[1;31msshield.1.gz\033[00m"
+	echo "|                |"
+	echo -e "|                \__ \033[1;34mnetfilter-persistent\033[00m"
+	echo -e "|                                       \__ \033[1;34mplugins.d\033[00m"
+	echo -e "|                                                    \__ \033[1;32m15-ip4tables\033[00m <-- File changed by sshield"
+	echo "|"
+	echo -e "|\__ \033[1;34mvar\033[00m"
+	echo -e "|       \__ \033[1;34mcache\033[00m"
+	echo "|               \__ sshield.deny"
+	echo "_"
+
+##############
+#    HELP    #
+##############
+
+elif [[ $argumento == "-h" || $argumento == "--help" ]];then
+	if [[ $# -gt 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+                echo "You use '--h' or '-h' for more information"
+	else
+		cat /usr/share/man/man1/sshield.help
+	fi
+else
+
+#
+# If the argument specified in command doesn't exist
+#
+
+	echo -e "\033[1;31m[-]\033[0;0m The argument $argumento doesn't exist"
+	echo "You use '--h' or '-h' for more information"
+fi
