@@ -109,6 +109,8 @@ case $files in
 	chmod a-x $PWD/sshield.help
 	chmod a-x $PWD/sshield.service
 	chmod a-x $PWD/sshield.1.gz
+        chmod a-x $PWD/README
+        chmod a-x $PWD/LICENSE
 	echo -ne "."
 	echo ""
 	operation "moving email" "mv $PWD/email /bin/"
