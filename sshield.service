@@ -3,6 +3,8 @@ Description=Service for protect attacks of brute force ssh's
 
 [Service]
 Type=simple
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/home/ivan/.Xauthority"
 ExecStart=/etc/sshield/sshield.sh
 ExecStop=/etc/sshield/sshield.sh stop
 RemainAfterExit=yes

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export DISPLAY=":0"
+
 ####################################################################################################
 #												   #
 # The `echo` lines commenteds, if you uncomments it, it will help your, at modify this script 	   #
@@ -134,8 +136,8 @@ do
 				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "IP bloqueada por sshield"
 				date=$(date)
 				echo "${sublista[0]} $date" >> /var/cache/sshield.deny
-				zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield"
-				email user@mail.com "Nueva regla iptables | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
+				zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0
+				email ivanherediaplanas@hotmail.com "Nueva regla iptables | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
 				declare -a ips=(${ips[@]/${sublista[0]}=>$intento/})
 			fi
 		elif [[ $(echo $linea_contenido | grep "New session") ]];then
