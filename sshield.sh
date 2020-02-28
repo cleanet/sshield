@@ -55,7 +55,7 @@ do
 
 		if [ "${#ips[*]}" = 0 ];then
 			if [[ ! $(echo $linea_contenido | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") ]];then
-				echo "ip not get - $(date)" >> /var/log/sshield.log
+				echo "ip not get - $(date)" > /dev/null
 				echo "" > /dev/null
 			else
 				ips=("$ip_session=>0" "${ips[@]}")
@@ -131,7 +131,7 @@ do
 			intento=$(($intentos+1))
 			contenido_sublista="${sublista[0]}=>$intento"
 			ips[$indice]=$contenido_sublista
-			echo "ips: ${ips[*]}" >> /var/log/sshield.log >> /var/log/sshield.log
+			echo "ips: ${ips[*]}" >> /var/log/sshield.log
 			if [ $intento = 5 ];then
 				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "Ip address denied by sshield"
 				date=$(date)
