@@ -2,16 +2,16 @@
 
 export DISPLAY=":0"
 
-####################################################################################################
-#												   #
-# The `echo` lines commenteds, if you uncomments it, it will help your, at modify this script 	   #
-#												   #
-# The sshield's scripts are free software and open source. You can public it, and modify it.	   #
-#												   #
-####################################################################################################
+#####################################################################################################################################
+#												   				    #
+# The `echo` lines redirects to a log file (sshield.log), if you deletes the redirections, it will help your, at modify this script #
+#												   				    #
+# The sshield's scripts have the MIT License.                                           	                                    #
+#												                                    #
+#####################################################################################################################################
 
 #
-# 
+# If you executes `sshield.sh stop`, it stop this script
 #
 
 if [[ $1 == "stop" ]];then
@@ -55,11 +55,11 @@ do
 
 		if [ "${#ips[*]}" = 0 ];then
 			if [[ ! $(echo $linea_contenido | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") ]];then
-#				echo "ip not get"
+				echo "ip not get" >> /var/log/sshield.log
 				echo "" > /dev/null
 			else
 				ips=("$ip_session=>0" "${ips[@]}")
-#				echo "ips: ${ips[*]}"
+				echo "ips: ${ips[*]}" >> /var/log/sshield.log
 			fi
 		#
 		# If, the `ips` list has elements, it do a for loop, and in every element, if the ip content of a element, is equal to the value of `ip_session`, the `iguales` boolean 
@@ -83,7 +83,7 @@ do
 					echo "" > /dev/null
 				else
 					ips=("$ip_session=>0" "${ips[@]}")
-#					echo "ips: ${ips[*]}"
+					echo "ips: ${ips[*]}" >> /var/log/sshield.log
 				fi
 			fi
 		fi
@@ -131,7 +131,7 @@ do
 			intento=$(($intentos+1))
 			contenido_sublista="${sublista[0]}=>$intento"
 			ips[$indice]=$contenido_sublista
-#			echo "ips: ${ips[*]}"
+			echo "ips: ${ips[*]}" >> /var/log/sshield.log >> /var/log/sshield.log
 			if [ $intento = 5 ];then
 				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "IP bloqueada por sshield"
 				date=$(date)
@@ -144,11 +144,11 @@ do
 			ip_logueada=$(wc -l /var/log/auth.log | grep -E -o "[0-9]{1,9}")
 			ip_logueada=$(($ip_logueada-2))
 			ip_logueada=$(sed -n $ip_logueada{p} /var/log/auth.log)
-#			echo "---------------------------------------------------------------------------"
-#			echo "linea: $ip_logueada"
+			echo "---------------------------------------------------------------------------" >> /var/log/sshield.log
+			echo "linea: $ip_logueada" >> /var/log/sshield.log
 			ip_logueada=$(echo $ip_logueada | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
 			limite_accedido=$((${#ips[*]}-1))
-#			echo "max_index: $limite_accedido"
+			echo "max_index: $limite_accedido" >> /var/log/sshield.log
 			intento_accedido=0
 			ip_accedido_ok=""
 			for index_accedido in $(seq 0 $limite_accedido)
@@ -158,18 +158,18 @@ do
 				if [[ "$ip_accedido" = "$ip_logueada" ]];then
 					ip_accedido_ok=$ip_accedido
 					intento_accedido="${sublista[2]}"
-#					echo "||| '$ip_accedido' equal to '$ip_logueada'"
+					echo "||| '$ip_accedido' equal to '$ip_logueada'" >> /var/log/sshield.log
 				else
-#					echo "| '$ip_accedido' not equal to '$ip_logueada'"
+					echo "| '$ip_accedido' not equal to '$ip_logueada'" >> /var/log/sshield.log
 					echo "" > /dev/null
 				fi
 			done
-#			echo "$ip_accedido_ok=>$intento_accedido"
+			echo "$ip_accedido_ok=>$intento_accedido" >> /var/log/sshield.log
 			declare -a ips=(${ips[@]/$ip_accedido_ok=>$intento_accedido/})
-#			echo "logged ip: $ip_logueada"
-#			echo "index login: $indice_accedido"
-#			echo "ips: ${ips[*]}"
-#			echo "---------------------------------------------------------------------------"
+			echo "logged ip: $ip_logueada" >> /var/log/sshield.log
+			echo "index login: $indice_accedido" >> /var/log/sshield.log
+			echo "ips: ${ips[*]}" >> /var/log/sshield.log
+			echo "---------------------------------------------------------------------------" >> /var/log/sshield.log
 		fi
 	fi
 	lineas_antiguas=$lineas;
