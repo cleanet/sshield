@@ -23,6 +23,6 @@ do
 	#
 
 	if [[ ! $(echo $iptables | grep -o "$ip") ]];then
-		iptables -I INPUT -s $ip -j DROP -m comment --comment "IP bloqueada por sshield"
+		iptables -I INPUT -s $ip -j DROP -m comment --comment "Ip address denied by sshield"
 	fi
 done
