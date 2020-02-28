@@ -9,6 +9,8 @@ Esto también contiene su propio desinstalador.
 
 Cualquier sugerencia contacta en cleannet29@gmail.com www.cleanet.260mb.net
 
+El script tiene un archivo log, en /var/log/sshield.log, generado por sshield.sh cuando detecta un logueo
+
 ===============
 ||IMPORTANTE ||
 ===============
@@ -123,6 +125,8 @@ Also, it contents su own uninstaller.
 
 If you has a answer or suggestion, you can inform me.
 My contact: <cleannet29@gmail.com> www.cleanet.260mb.net
+
+It has a file log, in /var/log/sshield.log, it is created, when the main script (sshield.sh) detects a login.
 
 ==============
 ||IMPORTANT ||
