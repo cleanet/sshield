@@ -133,7 +133,7 @@ do
 			ips[$indice]=$contenido_sublista
 			echo "ips: ${ips[*]}" >> /var/log/sshield.log >> /var/log/sshield.log
 			if [ $intento = 5 ];then
-				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "IP bloqueada por sshield"
+				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "Ip address denied by sshield"
 				date=$(date)
 				echo "${sublista[0]} $date - $(date)" >> /var/cache/sshield.deny
 				zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0
