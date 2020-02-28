@@ -55,11 +55,11 @@ do
 
 		if [ "${#ips[*]}" = 0 ];then
 			if [[ ! $(echo $linea_contenido | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") ]];then
-				echo "ip not get" >> /var/log/sshield.log
+				echo "ip not get - $(date)" >> /var/log/sshield.log
 				echo "" > /dev/null
 			else
 				ips=("$ip_session=>0" "${ips[@]}")
-				echo "ips: ${ips[*]}" >> /var/log/sshield.log
+				echo "ips: ${ips[*]} - $(date)" >> /var/log/sshield.log
 			fi
 		#
 		# If, the `ips` list has elements, it do a for loop, and in every element, if the ip content of a element, is equal to the value of `ip_session`, the `iguales` boolean 
@@ -83,7 +83,7 @@ do
 					echo "" > /dev/null
 				else
 					ips=("$ip_session=>0" "${ips[@]}")
-					echo "ips: ${ips[*]}" >> /var/log/sshield.log
+					echo "ips: ${ips[*]} - $(date)" >> /var/log/sshield.log
 				fi
 			fi
 		fi
@@ -135,9 +135,9 @@ do
 			if [ $intento = 5 ];then
 				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "IP bloqueada por sshield"
 				date=$(date)
-				echo "${sublista[0]} $date" >> /var/cache/sshield.deny
+				echo "${sublista[0]} $date - $(date)" >> /var/cache/sshield.deny
 				zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0
-				email ivanherediaplanas@hotmail.com "Nueva regla iptables | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
+				email ivanherediaplanas@hotmail.com "New sshield's rule | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
 				declare -a ips=(${ips[@]/${sublista[0]}=>$intento/})
 			fi
 		elif [[ $(echo $linea_contenido | grep "New session") ]];then
@@ -145,10 +145,10 @@ do
 			ip_logueada=$(($ip_logueada-2))
 			ip_logueada=$(sed -n $ip_logueada{p} /var/log/auth.log)
 			echo "---------------------------------------------------------------------------" >> /var/log/sshield.log
-			echo "linea: $ip_logueada" >> /var/log/sshield.log
+			echo "linea: $ip_logueada - $(date)" >> /var/log/sshield.log
 			ip_logueada=$(echo $ip_logueada | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
 			limite_accedido=$((${#ips[*]}-1))
-			echo "max_index: $limite_accedido" >> /var/log/sshield.log
+			echo "max_index: $limite_accedido - $(date)" >> /var/log/sshield.log
 			intento_accedido=0
 			ip_accedido_ok=""
 			for index_accedido in $(seq 0 $limite_accedido)
@@ -158,17 +158,17 @@ do
 				if [[ "$ip_accedido" = "$ip_logueada" ]];then
 					ip_accedido_ok=$ip_accedido
 					intento_accedido="${sublista[2]}"
-					echo "||| '$ip_accedido' equal to '$ip_logueada'" >> /var/log/sshield.log
+					echo "||| '$ip_accedido' equal to '$ip_logueada' - $(date)" >> /var/log/sshield.log
 				else
-					echo "| '$ip_accedido' not equal to '$ip_logueada'" >> /var/log/sshield.log
+					echo "| '$ip_accedido' not equal to '$ip_logueada' - $(date)" >> /var/log/sshield.log
 					echo "" > /dev/null
 				fi
 			done
-			echo "$ip_accedido_ok=>$intento_accedido" >> /var/log/sshield.log
+			echo "$ip_accedido_ok=>$intento_accedido - $(date)" >> /var/log/sshield.log
 			declare -a ips=(${ips[@]/$ip_accedido_ok=>$intento_accedido/})
-			echo "logged ip: $ip_logueada" >> /var/log/sshield.log
-			echo "index login: $indice_accedido" >> /var/log/sshield.log
-			echo "ips: ${ips[*]}" >> /var/log/sshield.log
+			echo "logged ip: $ip_logueada - $(date)" >> /var/log/sshield.log
+			echo "index login: $indice_accedido - $(date)" >> /var/log/sshield.log
+			echo "ips: ${ips[*]} - $(date)" >> /var/log/sshield.log
 			echo "---------------------------------------------------------------------------" >> /var/log/sshield.log
 		fi
 	fi
