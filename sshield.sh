@@ -131,11 +131,11 @@ do
 			intento=$(($intentos+1))
 			contenido_sublista="${sublista[0]}=>$intento"
 			ips[$indice]=$contenido_sublista
-			echo "ips: ${ips[*]}" >> /var/log/sshield.log
+			echo "ips: ${ips[*]} - $(date)" >> /var/log/sshield.log
 			if [ $intento = 5 ];then
 				iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "Ip address denied by sshield"
 				date=$(date)
-				echo "${sublista[0]} $date - $(date)" >> /var/cache/sshield.deny
+				echo "${sublista[0]} $date" >> /var/cache/sshield.deny
 				zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0
 				email ivanherediaplanas@hotmail.com "New sshield's rule | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
 				declare -a ips=(${ips[@]/${sublista[0]}=>$intento/})
