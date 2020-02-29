@@ -15,3 +15,4 @@ Arguments:
 	--list		-l		List the file sshield.deny
 			-L		List the addresses ip denied
 	--help		-h		Show this help information
+	--change-password		Change the email's password
