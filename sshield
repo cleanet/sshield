@@ -36,7 +36,7 @@ fi
 argumento=$1
 if [[ $# = 0 ]];then
 	echo -e "\033[1;34m[!]\033[0;0m It need arguments"
-	echo "You use '--h' or '-h' for more information"
+	echo "You use '--help' or '-h' for more information"
 	exit 1
 else
 	:
@@ -62,7 +62,7 @@ if [[ $argumento == "-I" || $argumento == "--insert" ]];then
         obtener_ips "$*"
         if [[ $# = 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m It hasn't any address ip"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
                 exit 1
         fi
 
@@ -146,7 +146,7 @@ elif [[ $argumento == "-D" || $argumento == "--delete" ]];then
         obtener_ips "$*"
         if [[ $# = 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m It hasn't any address ip"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
                 exit 1
         fi
 	for i in ${ips[*]}
@@ -209,7 +209,7 @@ elif [[ $argumento == "-D" || $argumento == "--delete" ]];then
 elif [[ $argumento == "-F" || $argumento == "--flush" ]];then
 	if [[ $# -gt 1 ]];then
 		echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
-		echo "You use '--h' or '-h' for more information"
+		echo "You use '--help' or '-h' for more information"
 	else
 		# ___________
 		# |IMPORTANT| The execute, make a iptables' alert, because if the address ip has mask, the two variables (`iptables` and `iptables2`) is executed, and one will do to fail.
@@ -248,7 +248,7 @@ elif [[ $argumento == "-F" || $argumento == "--flush" ]];then
 elif [[ $argumento == "-R" || $argumento == "--remove-all" ]];then
         if [[ $# -gt 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
         else
 		#
 		# It do the same that the flush argument, but without empting the sshield.deny file
@@ -270,7 +270,7 @@ elif [[ $argumento == "-R" || $argumento == "--remove-all" ]];then
 elif [[ $argumento == "-u" || $argumento == "--update" ]];then
 	if [[ $# -gt 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
 	else
 		#
 		# Run the daemon, for denying the sshield.deny file's addresses ip
@@ -287,7 +287,7 @@ elif [[ $argumento == "-u" || $argumento == "--update" ]];then
 elif [[ $argumento == "-l" || $argumento == "--list" ]];then
 	if [[ $# -gt 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
 	else
 		more /var/cache/sshield.deny
 	fi
@@ -299,7 +299,7 @@ elif [[ $argumento == "-l" || $argumento == "--list" ]];then
 elif [[ $argumento == "-L" ]];then
 	if [[ $# -gt 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
 	else
 		echo "-------------------"
 		echo "|     SSHIELD     |"
@@ -382,9 +382,33 @@ elif [[ $argumento == "--tree" ]];then
 elif [[ $argumento == "-h" || $argumento == "--help" ]];then
 	if [[ $# -gt 1 ]];then
                 echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
-                echo "You use '--h' or '-h' for more information"
+                echo "You use '--help' or '-h' for more information"
 	else
 		cat /usr/share/man/man1/sshield.help
+	fi
+
+########################
+#   CHANGE PASSWORD    #
+########################
+
+elif [[ $argumento == "--change-password" ]];then
+	if [[ $# -gt 1 ]];then
+                echo -e "\033[1;31m[-]\033[0;0m The argumment $1 doesn't allow values"
+                echo "You use '--help' or '-h' for more information"
+	else
+		echo -n "write password (not display): "
+		read -s password1
+		echo ""
+                echo -n "re-write password (not display): "
+                read -s password2
+		echo ""
+		if [[ $password1 = $password2 ]];then
+                        sed -r -i "s/passwd\=(.+)/password=\"${password1}\"/" ./email
+                        echo -e "\033[1;32m[+]\033[0m password changed"
+			exit 1
+		else
+			echo -e "\033[1;31m[-]\033[0m The passwords don't agree"
+		fi
 	fi
 else
 
@@ -393,5 +417,5 @@ else
 #
 
 	echo -e "\033[1;31m[-]\033[0;0m The argument $argumento doesn't exist"
-	echo "You use '--h' or '-h' for more information"
+	echo "You use '--help' or '-h' for more information"
 fi
