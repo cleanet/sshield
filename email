@@ -4,7 +4,7 @@ remitente="user@mail.com"
 servidor="smtp.mail.com:25"
 #credentials
 usuario=$remitente
-passwd="contraseña"
+password="contraseña"
 
 #Message
 Asunto=$2
