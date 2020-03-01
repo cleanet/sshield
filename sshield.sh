@@ -34,7 +34,7 @@ declare -r AUTH_LOG_FILE="/var/log/auth.log"
 #
 
 function write_line(){
-	echo "$1" >> $SSHIELD_LOG_FILE
+	echo -e "$1" >> $SSHIELD_LOG_FILE
 }
 
 tail -n 0 -F $AUTH_LOG_FILE | while read line
@@ -49,7 +49,7 @@ do
 
 	if [ "${#ips[*]}" = 0 ];then
 		if [[ ! $(echo $line | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") ]];then
-			write_line "ip not get - $(date)"
+			echo "ip not get - $(date)" > /dev/null
 		else
 			ips=("$ip_session=>0" "${ips[@]}")
 			write_line "ips: ${ips[*]} - $(date)"
@@ -74,7 +74,7 @@ do
 		done
 		if [ $iguales = 0 ];then
 			if [ "$ip_session" = "" ];then
-				write_line ""
+				echo "" > /dev/null
 			else
 				ips=("$ip_session=>0" "${ips[@]}")
 				write_line "ips: ${ips[*]} - $(date)"
@@ -96,7 +96,7 @@ do
 	        IFS="=>" read -ra sublista <<< ${ips[index]};
      	        ip=${sublista[0]}
 		if [[ "$ip_session" = "" && "$ip" = "" ]];then
-			write_line ""
+			echo "" > /dev/null
 		else
 			if [ "$ip_session" = "$ip" ];then
                   		indice=$index
@@ -130,7 +130,8 @@ do
 			iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "Ip address denied by sshield"
 			date=$(date)
 			echo "${sublista[0]} $date" >> /var/cache/sshield.deny
-			zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0
+			write_line "\033[1;34m[!]\033[0m IP address ${sublista[0]} denied at $date"
+			zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0 > /dev/null 2>&1
 			email user@mail.com "New sshield's rule | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
 			declare -a ips=(${ips[@]/${sublista[0]}=>$intento/})
 		fi
@@ -155,7 +156,6 @@ do
 				write_line "||| '$ip_accedido' equal to '$ip_logueada' - $(date)"
 			else
 				write_line "| '$ip_accedido' not equal to '$ip_logueada' - $(date)"
-				write_line ""
 			fi
 		done
 		write_line "$ip_accedido_ok=>$intento_accedido - $(date)"
