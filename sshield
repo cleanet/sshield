@@ -403,7 +403,7 @@ elif [[ $argumento == "--change-password" ]];then
                 read -s password2
 		echo ""
 		if [[ $password1 = $password2 ]];then
-                        sed -r -i "s/password\=(.+)/password=\"${password1}\"/" ./email
+                        sed -r -i "s/password\=(.+)/password=\"${password1}\"/" /bin/email
                         echo -e "\033[1;32m[+]\033[0m password changed"
 			exit 1
 		else
