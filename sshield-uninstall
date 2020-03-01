@@ -44,6 +44,7 @@ do
 	confirm=$((confirm+1))
 done
 systemctl disable sshield > /dev/null 2>&1
+systemctl stop sshield > /dev/null 2>&1
 operation "sshield -F" "sshield -F"
 operation "deleting /bin/email" "shred -u /bin/email"
 operation "deleting /bin/sshield" "shred -u /bin/sshield"
