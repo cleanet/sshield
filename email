@@ -11,7 +11,7 @@ Asunto=$2
 Cuerpo=$3
 
 if [ $# = 3 ];then
-	swaks --to $destino --from $remitente --server $servidor --auth LOGIN --auth-user $usuario --auth-password $passwd -tls --add-header "Content-Type: text/html" --data "Date: %DATE%\nTo: %TO_ADDRESS%\nFrom: %FROM_ADDRESS%\nSubject: $Asunto \n%NEW_HEADERS%\n $Cuerpo \n" > /dev/null
+	swaks --to $destino --from $remitente --server $servidor --auth LOGIN --auth-user $usuario --auth-password $password -tls --add-header "Content-Type: text/html" --data "Date: %DATE%\nTo: %TO_ADDRESS%\nFrom: %FROM_ADDRESS%\nSubject: $Asunto \n%NEW_HEADERS%\n $Cuerpo \n" > /dev/null
 	echo -e "\033[0;32m[+]\033[0;0m Sent successfully."
 elif [ $# -gt 3 ];then
 	echo -e "\033[1;31m[-]\033[0;0m It only needs 3 arguments."
