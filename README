@@ -7,9 +7,9 @@ Este archivo instalará el servicio. Instalando los paquetes 'zenity', 'iptables
 
 Esto también contiene su propio desinstalador.
 
-Cualquier sugerencia contacta en cleannet29@gmail.com www.cleanet.260mb.net
+Cualquier sugerencia contacta en <cleannet29@gmail.com> www.cleanet.260mb.net
 
-El script tiene un archivo log, en /var/log/sshield.log, generado por sshield.sh cuando detecta un logueo
+El script tiene un archivo log, en /var/log/sshield.log, generado por sshield.sh.
 
 ===============
 ||IMPORTANTE ||
