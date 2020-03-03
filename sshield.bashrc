@@ -33,8 +33,9 @@ done
 # It is the same. But with root
 #
 paths=("/root/.bashrc" "/etc/skel/.bashrc")
-for path in $paths
+for path in ${paths[*]}
 do
+	echo $path
 	if [[ ! $(cat $path | grep "ADDRESSES IP DENIED") ]];then
 		echo 'echo "#######################################################"' >> $path
 	        echo 'echo "                  ADDRESSES IP DENIED                  "' >> $path
