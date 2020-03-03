@@ -2,7 +2,7 @@ sshield
 IMPORTANT: The command need run with preveleges root
 
 Usage:
-	sshield -[ID] [address,[address]...]
+	sshield -[ID] [address [address]...] (space for various addresses)
 	sshield -[FRulLh]
 
 Arguments:
@@ -13,6 +13,6 @@ Arguments:
 	--remove-all	-R		Remove all the ip addresses denied by sshield, but it doesn't empty the file sshield.deny
 	--update	-u		Denied the ips listed in the file sshield.deny
 	--list		-l		List the file sshield.deny
-			-L		List the addresses ip denied
+			-L		List the addresses ip denied (IPv4 & IPv6)
 	--help		-h		Show this help information
 	--change-password		Change the email's password
