@@ -119,7 +119,6 @@ case $files in
 	operation "moving sshield.sh" "mv $PWD/sshield.sh /etc/sshield/"
 	operation "moving sshieldd" "mv $PWD/sshieldd /etc/sshield/"
 	operation "executing sshield.bashrc" "$PWD/sshield.bashrc"
-	operation "deleting sshield.bashhrc" "shred -u $PWD/sshield.bashrc"
 	operation "moving sshield.service" "mv $PWD/sshield.service /lib/systemd/system/"
 	operation "linking sshield.service" "ln -s /lib/systemd/system/sshield.service /etc/systemd/system/sshield.service"
 	operation "coping sshield.init" "cp $PWD/sshield.init /etc/systemd/system/sshield"
