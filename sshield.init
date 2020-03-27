@@ -1,5 +1,10 @@
 #!/bin/bash
- 
+
+### BEGIN INIT INFO
+# Default-Start: 1 2 3 4 5
+# Default-Stop: 0 6
+### END INIT INFO
+
 NAME=sshield
 PIDFILE="/var/run/${NAME}.pid"
 
