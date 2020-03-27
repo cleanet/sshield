@@ -131,7 +131,7 @@ do
 		if [ $intento = 5 ];then
 			iptables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "Ip address denied by sshield" > /dev/null 2>&1 || ip6tables -I INPUT -s ${sublista[0]} -j DROP -m comment --comment "Ip address denied by sshield" > /dev/null 2>&1
 			date=$(date +'%m/%d/%Y %H.%M.%S')
-			echo "${sublista[0]} $date" >> /var/cache/sshield.deny
+			echo "${sublista[0]}" >> /var/cache/sshield.deny
 			write_line "\033[1;34m[!]\033[0m IP address ${sublista[0]} denied at $date"
 			zenity --notification --text "IP address ${sublista[0]} denied at $date - sshield" --display :0 > /dev/null 2>&1
 			email user@mail.com "New sshield's rule | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh.<br><br>Date: $date"
