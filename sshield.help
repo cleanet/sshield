@@ -16,3 +16,7 @@ Arguments:
 			-L		List the addresses ip denied (IPv4 & IPv6)
 	--help		-h		Show this help information
 	--change-password		Change the email's password
+	status				Show service's status
+	start				Start service
+	stop				Stop service
+	restart				Restart service
