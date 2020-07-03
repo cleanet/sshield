@@ -419,6 +419,35 @@ elif [[ $argumento == "--change-password" ]];then
 			echo -e "\033[1;31m[-]\033[0m The passwords don't agree"
 		fi
 	fi
+
+####################
+#      STATUS      #
+####################
+
+elif [[ $argumento == "status" ]];then
+	/etc/init.d/sshield status
+
+###################
+#      START      #
+###################
+
+elif [[ $argumento == "start" ]];then
+	/etc/init.d/sshield start
+
+#####################
+#      RESTART      #
+#####################
+
+elif [[ $argumento == "restart" ]];then
+        /etc/init.d/sshield restart
+
+##################
+#      STOP      #
+##################
+
+elif [[ $argumento == "stop" ]];then
+        /etc/init.d/sshield stop
+
 else
 
 #
