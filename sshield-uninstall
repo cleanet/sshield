@@ -19,10 +19,11 @@ function operation(){
 	echo -ne $1
 	loading&
 	PID_loading=$!
+	# if the installation or desinstallation have dialogs, it doesn't show it, but is executed
 	if [[ $3 = 1 ]];then
-		sudo $2
+		$2
 	else
-		sudo DEBIAN_FRONTEND=nointeractive $2 > /dev/null 2>&1
+		DEBIAN_FRONTEND=nointeractive $2 > /dev/null 2>&1
 	fi
 	kill -19 $PID_loading > /dev/null 2>&1
 	echo ""
