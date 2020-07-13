@@ -133,6 +133,7 @@ do
 			date=$(date +'%m/%d/%Y %H.%M.%S')
 			echo "${sublista[0]}" >> /var/cache/sshield.deny
 			write_line "\033[1;34m[!]\033[0m IP address ${sublista[0]} denied at $date in the host $(hostname -I | cut -d ' ' -f1)"
+			notifybox --info --title "sshield" --text "IP address ${sublista[0]} denied at $date in the host $(hsotname -I | cut -d ' ' -f1)"
 			zenity --notification --text "IP address ${sublista[0]} denied at $date in the host $(hostname -I | cut -d ' ' -f1) - sshield" --display :0 > /dev/null 2>&1
 			email user@mail.com "New sshield's rule | ${sublista[0]} denied" "The ${sublista[0]} ip address is denied by brute force's attack ssh in the host $(hostname -I | cut -d ' ' -f1).<br><br>Date: $date"
 			declare -a ips=(${ips[@]/${sublista[0]}=>$intento/})
