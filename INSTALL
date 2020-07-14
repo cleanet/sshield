@@ -22,8 +22,10 @@ function operation(){
 	# if the installation or desinstallation have dialogs, it doesn't show it, but is executed.
 	if [[ $3 = 1 ]];then
 		$2
+		echo -ne "\033[1;32mOK\033[0m"
 	else
 		DEBIAN_FRONTEND=nointeractive $2 > /dev/null 2>&1
+		echo -ne "\033[1;32mOK\033[0m"
 	fi
 	kill -19 $PID_loading > /dev/null 2>&1
 	echo ""
