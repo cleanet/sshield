@@ -11,9 +11,7 @@ Cualquier sugerencia contacta en <cleannet29@gmail.com> www.cleanet.260mb.net
 
 El script tiene un archivo log, en /var/log/sshield.log, generado por sshield.sh.
 
-===============
-||IMPORTANTE ||
-===============
+##IMPORTANTE
 
 El instalador modifica los archivos ~/.bashrc (de cada usuario y el root) y /etc/skel/.bashrc (para nuevos usuario). Y añade las siguientes lineas, al final del todo:
 
@@ -128,9 +126,7 @@ My contact: <cleannet29@gmail.com> www.cleanet.260mb.net
 
 It has a file log, in /var/log/sshield.log, it is created, when the main script (sshield.sh) detects a login.
 
-==============
-||IMPORTANT ||
-==============
+##IMPORTANTE
 
 The uninstaller change the files ~/.bashrc (each user and the root user) and /etc/skel/.bashrc (news users). And it add the follow lines, in the end of the file:
 
