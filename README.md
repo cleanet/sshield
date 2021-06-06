@@ -126,7 +126,7 @@ My contact: <cleannet29@gmail.com> www.cleanet.260mb.net
 
 It has a file log, in /var/log/sshield.log, it is created, when the main script (sshield.sh) detects a login.
 
-##IMPORTANTE
+## IMPORTANTE
 
 The uninstaller change the files ~/.bashrc (each user and the root user) and /etc/skel/.bashrc (news users). And it add the follow lines, in the end of the file:
 
