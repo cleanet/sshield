@@ -29,69 +29,68 @@ El instalador modifica los archivos ~/.bashrc (de cada usuario y el root) y /etc
 
 
 Si al principio o al final insertas algo, no pasará nada. Al ejecutar el desinstalador, todo irá bien:
-	EJEM:
-		INSTALADO:
+INSTALADO:
 ```
-			ESTO ES UN EJEMPLO
-			echo "#######################################################"
-			echo "                  ADDRESSES IP DENIED                  "
-			echo "#######################################################"
-			linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
-			linea_minima=4
-			for y in $(seq $linea_minima $linea_maxima)
-			do
-			        ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
-			        echo -e "\033[0;31m[-]\033[0;0m $ip IP address denied, because they tried to attack by \033[4;31mbrute force\033[00m ssh."
-			done
-			ESTO ES UN EJEMPLO
+ESTO ES UN EJEMPLO
+echo "#######################################################"
+echo "                  ADDRESSES IP DENIED                  "
+echo "#######################################################"
+linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
+linea_minima=4
+for y in $(seq $linea_minima $linea_maxima)
+do
+        ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+        echo -e "\033[0;31m[-]\033[0;0m $ip IP address denied, because they tried to attack by \033[4;31mbrute force\033[00m ssh."
+done
+ESTO ES UN EJEMPLO
 ```
-		DESINTALADO:
+DESINTALADO:
 ```
-                        ESTO ES UN EJEMPLO
-                        ESTO ES UN EJEMPLO
+ESTO ES UN EJEMPLO
+ESTO ES UN EJEMPLO
 ```
-	FUNCIONAMIENTO:
+FUNCIONAMIENTO:
 		Al instalar, el script ejecuta un echo con una redireccion. Más bién, ejecuta un comando temporal (sshield.bashrc),
 		que se encarga de insertar mediante una rediccion al archivo indicado.
 		Mientras que al desintalarlo, esto hace un bucle for donde analiza cada linea del archivo (/etc/skel/.bashrc,~/.bashrc,/root/.bashrc) en busca del string "ADDRESSES IP DENIED".
 		Después, captura el numero de linea que tiene esa palabra, y elimina su anterior linea y 8 lineas más
 ```
-		[...]
-              15  ESTO ES UN EJEMPLO
-              16  echo "#######################################################"
-              17  echo "                  ADDRESSES IP DENIED                  "
-              18  echo "#######################################################"
-              19  linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
-              20  linea_minima=4
-              21  for y in $(seq $linea_minima $linea_maxima)
-              22  do
-	      23          ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
-              24          echo -e "\033[0;31m[-]\033[0;0m $ip IP address denied, because they tried to attack by \033[4;31mbrute force\033[00m ssh."
-              25  done
-              26  ESTO ES UN EJEMPLO
-		[...]
+[...]
+15  ESTO ES UN EJEMPLO
+16  echo "#######################################################"
+17  echo "                  ADDRESSES IP DENIED                  "
+18  echo "#######################################################"
+19  linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
+20  linea_minima=4
+21  for y in $(seq $linea_minima $linea_maxima)
+22  do
+23          ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+24          echo -e "\033[0;31m[-]\033[0;0m $ip IP address denied, because they tried to attack by \033[4;31mbrute force\033[00m ssh."
+25  done
+26  ESTO ES UN EJEMPLO
+[...]
 		
-		linea = 17
-		inicio=$(($linea-1))
-		fin=$(($linea+8))
+linea = 17
+inicio=$(($linea-1))
+fin=$(($linea+8))
 ```
-		El problema está si insertas algo en la linea 17, por ejemplo
+El problema está si insertas algo en la linea 17, por ejemplo
 ```
-                [...]
-              15  ESTO ES UN EJEMPLO
-              16  echo "#######################################################"
-              17  echo "                  ADDRESSES IP DENIED                  "
-              18  echo "#######################################################"
-              19  # ESTO ES UN EJEMPLO
-              20  linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
-              21  linea_minima=4
-              22  for y in $(seq $linea_minima $linea_maxima)
-              23  do
-              24          ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
-              25          echo -e "\033[0;31m[-]\033[0;0m $ip IP address denied, because they tried to attack by \033[4;31mbrute force\033[00m ssh."
-              26  done
-              27  ESTO ES UN EJEMPLO
-                [...]
+[...]
+15  ESTO ES UN EJEMPLO
+16  echo "#######################################################"
+17  echo "                  ADDRESSES IP DENIED                  "
+18  echo "#######################################################"
+19  # ESTO ES UN EJEMPLO
+20  linea_maxima=$(wc -l /var/cache/sshield.deny | grep -E -o "[0-9]{1,9}")
+21  linea_minima=4
+22  for y in $(seq $linea_minima $linea_maxima)
+23  do
+24          ip=$(awk "NR==$y" /var/cache/sshield.deny | grep -E -o "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
+25          echo -e "\033[0;31m[-]\033[0;0m $ip IP address denied, because they tried to attack by \033[4;31mbrute force\033[00m ssh."
+26  done
+27  ESTO ES UN EJEMPLO
+[...]
 `	
 	RESULTADO:
 `	
